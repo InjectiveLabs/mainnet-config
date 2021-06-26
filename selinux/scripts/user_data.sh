@@ -9,14 +9,24 @@ VALIDATOR_HOME=/home/injective.validator
 INJECTIVED_LOG_OUT=/var/log/injectived.log
 PEGGO_LOG_OUT=/var/log/peggo.log
 NETWORK_GENESIS=https://raw.githubusercontent.com/InjectiveLabs/network-config/31660074274027b239281863fd1068a42e520372/staking/40009/genesis.json
-PEGGO_ENV=
+
+PEGGO_ENV=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/7560af65908e963d952242ff233dc63c37ae8bc3/selinux/config/peggo.env
+INJECTIVED_APP_CONFIG=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/7560af65908e963d952242ff233dc63c37ae8bc3/selinux/config/app.toml
+INJECTIVED_CONFIG=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/7560af65908e963d952242ff233dc63c37ae8bc3/selinux/config/config.toml
+INJECTIVED_SERVICE_UNIT=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/7560af65908e963d952242ff233dc63c37ae8bc3/selinux/systemd/injectived.service
+PEGGO_SERVICE_UNIT=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/7560af65908e963d952242ff233dc63c37ae8bc3/selinux/systemd/peggo.service
+
 CHAIN_BIN_RELEASE_TAG=v4.0.9-1624286601
+SELINUX_POLICIES_REV=selinux-policies-1
+INIT_VALIDATOR_FILES_REV=tool-release-1
+UPDATE_VALIDATOR_FILES_REV=tool-release-2
 
 set -e
 
 yum update -y
 yum install -y unzip wget tree nano \
-	selinux-policy selinux-policy-targeted setools-console
+	selinux-policy selinux-policy-targeted setools-console \
+	policycoreutils-python-utils
 
 sestatus
 
@@ -40,23 +50,28 @@ echo "Adding staff group"
 groupadd staff
 usermod -a -G staff injective.dev
 
-# wget -O /etc/sudoers.d/staff.sudo
+wget https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/7560af65908e963d952242ff233dc63c37ae8bc3/selinux/sudo/staff.sudo \
+	-O /etc/sudoers.d/staff.sudo
 
-echo "Copy ~/.ssh/authorized_keys to injective.dev"
+echo "Copy authorized_keys to injective.dev"
 
 mkdir /home/injective.dev/.ssh
-cp ~/.ssh/authorized_keys /home/injective.dev/.ssh/
-chown -R injective.dev /home/injective.dev/.ssh
+chcon "staff_u:object_r:ssh_home_t:s0" /home/injective.dev/.ssh
+cp /root/.ssh/authorized_keys /home/injective.dev/.ssh/
+chcon "staff_u:object_r:ssh_home_t:s0" /home/injective.dev/.ssh/authorized_keys
+chown -R injective.dev:injective.dev /home/injective.dev/.ssh
 
-echo "Copy ~/.ssh/authorized_keys to injective.validator"
+echo "Copy authorized_keys to injective.validator"
 
 mkdir /home/injective.validator/.ssh
-cp ~/.ssh/authorized_keys /home/injective.validator/.ssh/
-chown -R injective.validator /home/injective.validator/.ssh
+chcon "user_u:object_r:ssh_home_t:s0" /home/injective.validator/.ssh
+cp /root/.ssh/authorized_keys /home/injective.validator/.ssh/
+chcon "user_u:object_r:ssh_home_t:s0" /home/injective.validator/.ssh/authorized_keys
+chown -R injective.validator:injective.validator /home/injective.validator/.ssh
 
 echo "Setup update validator files tool"
 
-wget https://github.com/InjectiveLabs/mainnet-config/releases/download/tool-release-2/update-validator-files_linux_amd64.zip \
+wget https://github.com/InjectiveLabs/mainnet-config/releases/download/$UPDATE_VALIDATOR_FILES_REV/update-validator-files_linux_amd64.zip \
 	-O tmp.zip && unzip tmp.zip && rm tmp.zip
 
 mv update-validator-files_linux_amd64/update-validator-files /usr/local/bin/
@@ -70,9 +85,12 @@ rm -rf geth-linux-amd64-1.10.4-aa637fd3
 chcon "system_u:object_r:bin_t:s0" /usr/local/bin/geth
 
 echo "Download SELinux policies for injectived, peggo and updater"
-# wget -O /root/injectived-validator.pp
-# wget -O /root/peggo-orchestrator.pp
-# wget -O /root/injective-update.pp
+wget https://github.com/InjectiveLabs/mainnet-config/releases/download/$SELINUX_POLICIES_REV/injectived-validator.pp \
+	-O /root/injectived-validator.pp
+wget https://github.com/InjectiveLabs/mainnet-config/releases/download/$SELINUX_POLICIES_REV/peggo-orchestrator.pp \
+	-O /root/peggo-orchestrator.pp
+wget https://github.com/InjectiveLabs/mainnet-config/releases/download/$SELINUX_POLICIES_REV/injective-update.pp \
+	-O /root/injective-update.pp
 
 echo "Installing injectived-validator.pp"
 semodule -i /root/injectived-validator.pp
@@ -116,9 +134,11 @@ update-validator-files \
 	-home-dir $VALIDATOR_HOME \
 	-release-os linux-amd64
 
-echo "Downloading injectived config template"
-# wget -O $VALIDATOR_HOME/config/config.toml
-# wget -O $VALIDATOR_HOME/config/app.toml
+echo "Downloading injectived config templates"
+wget $INJECTIVED_CONFIG -O $VALIDATOR_HOME/config/config.toml
+wget $INJECTIVED_APP_CONFIG -O $VALIDATOR_HOME/config/app.toml
+
+echo "Downloading genesis snapshot"
 curl $NETWORK_GENESIS > $VALIDATOR_HOME/config/genesis.json
 
 echo "Downloading peggo config template"
@@ -134,8 +154,8 @@ sed -i 's|persistent_peers = ""|persistent_peers = "'${CONFIG_PERSISTENT_PEERS}'
 
 echo "Installing Systemd Unit files"
 
-# wget -O /etc/systemd/system/injective.service
-# wget -O /etc/systemd/system/peggo.service
+wget $INJECTIVED_SERVICE_UNIT -O /etc/systemd/system/injective.service
+wget $PEGGO_SERVICE_UNIT -O /etc/systemd/system/peggo.service
 
 systemctl daemon-reload
 systemctl enable injective
@@ -173,7 +193,7 @@ chmod 600 /etc/securetty
 
 echo "Init validator files"
 
-wget https://github.com/InjectiveLabs/mainnet-config/releases/download/tool-release-1/init-validator-files_linux_amd64.zip \
+wget https://github.com/InjectiveLabs/mainnet-config/releases/download/$INIT_VALIDATOR_FILES_REV/init-validator-files_linux_amd64.zip \
 	-O tmp.zip && unzip tmp.zip && rm tmp.zip
 
 mv init-validator-files_linux_amd64/init-validator-files /usr/local/bin/
@@ -189,5 +209,5 @@ echo "Remap unconfined root to sysadm"
 semanage login -m -S targeted -s "sysadm_u" -r s0-s0:c0.c1023 root
 
 echo "Prevent any future SELinux policy changes"
-semanage boolean --on secure_mode_policyload
+semanage boolean -m --on secure_mode_policyload
 
