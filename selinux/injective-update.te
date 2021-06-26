@@ -18,9 +18,6 @@ require {
 		read write create entrypoint ioctl
 		relabelto lock rename unlink
 	};
-	# class netlink_route_socket { bind create };
-	# class sock_file { getattr write };
-	# class unix_stream_socket { read write connectto };
 	class tcp_socket {
         create setopt getopt getattr
         connect name_connect read write
@@ -29,10 +26,7 @@ require {
 		create connect getattr
 		read write setopt
 	};
-	lnk_file { open read getattr };
-
-	# class dbus send_msg;
-	# class netlink_route_socket { getattr };
+	class lnk_file { open read getattr };
 
 	attribute domain;
 	attribute file_type;
@@ -42,19 +36,9 @@ require {
 	type user_home_dir_t;
 	type user_home_t;
 	type home_bin_t;
-	#type proc_t;
 	type sysfs_t;
 	type http_port_t;
-	#type passwd_file_t;
-	#type user_tmp_t;
-	#type user_dbusd_t;
 	type net_conf_t;
-	#type sysctl_net_t;
-	#type unreserved_port_t;
-	#type node_t;
-	#type adjtime_t;
-	#type ephemeral_port_t;
-	#type var_log_t;
 	type cert_t;
 }
 

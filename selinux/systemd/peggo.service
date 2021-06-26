@@ -1,0 +1,21 @@
+[Unit]
+Description=Injective Peggo Orchestrator
+After=network.target
+
+[Service]
+Type=simple
+User=injective.validator
+SELinuxContext=system_u:system_r:peggo_t:s0
+WorkingDirectory=/home/injective.validator/peggo
+ExecStart=/home/injective.validator/bin/peggo orchestrator
+TimeoutStartSec=0
+LimitNOFILE=200000
+KillSignal=SIGINT
+TimeoutStopSec=1min
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/peggo.log
+StandardError=append:/var/log/peggo.log
+
+[Install]
+WantedBy=default.target

@@ -36,6 +36,7 @@ require {
 	class dbus send_msg;
 	class netlink_route_socket { getattr };
 	class lnk_file { open read getattr };
+
 	attribute domain;
 	attribute file_type;
 
@@ -45,6 +46,7 @@ require {
 	type bin_t;
 	type user_devpts_t;
 	type user_home_dir_t;
+	type user_home_t;
 	type user_tmp_t;
 	type home_bin_t;
 	type user_dbusd_t;
@@ -57,6 +59,7 @@ require {
 	type var_log_t;
 	type http_port_t;
 	type cert_t;
+	type cloud_log_t;
 }
 
 #=========== Typedefs ===================
@@ -78,6 +81,13 @@ allow injectived_t validator_config_t: { dir file } {
 allow injectived_t validator_config_t: file { lock unlink append };
 allow injectived_t validator_config_t: dir { search rmdir };
 
+allow injectived_t user_home_t: { dir file } {
+        add_name remove_name read write create getattr open rename
+};
+allow injectived_t user_home_t: file { lock unlink append };
+allow injectived_t user_home_t: dir { search rmdir };
+allow injectived_t user_home_dir_t:dir write;
+
 allow injectived_t injectived_exec_t: file {
 	read open getattr map execute entrypoint
 };
@@ -89,6 +99,7 @@ type_transition user_t injectived_exec_t: process injectived_t;
 allow user_t injectived_t: process transition;
 allow user_t injectived_log_t:file { open read getattr };
 allow staff_t injectived_log_t:file { open read getattr };
+allow staff_t cloud_log_t:file { open read getattr };
 
 #=========== init_t (systemd) ===========
 
@@ -138,3 +149,4 @@ allow injectived_t injectived_log_t:file { open create write append ioctl };
 allow injectived_t http_port_t:tcp_socket name_connect;
 allow injectived_t cert_t:dir { open read search };
 allow injectived_t cert_t:{ file lnk_file } { open read getattr };
+allow injectived_t user_home_dir_t: dir { getattr open search };

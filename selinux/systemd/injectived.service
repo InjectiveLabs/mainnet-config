@@ -1,0 +1,20 @@
+[Unit]
+Description=Injective Validator Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=injective.validator
+SELinuxContext=system_u:system_r:injectived_t:s0
+ExecStart=/home/injective.validator/bin/injectived start --home /home/injective.validator
+TimeoutStartSec=0
+LimitNOFILE=200000
+KillSignal=SIGINT
+TimeoutStopSec=1min
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/injectived.log
+StandardError=append:/var/log/injectived.log
+
+[Install]
+WantedBy=default.target

@@ -37,6 +37,7 @@ require {
 	class dbus send_msg;
 	class netlink_route_socket { getattr };
 	class lnk_file { open read getattr };
+
 	attribute domain;
 	attribute file_type;
 
@@ -46,6 +47,7 @@ require {
 	type bin_t;
 	type user_devpts_t;
 	type user_home_dir_t;
+	type user_home_t;
 	type user_tmp_t;
 	type home_bin_t;
 	type user_dbusd_t;
@@ -77,11 +79,18 @@ allow peggo_t validator_config_t: { dir file } {
 allow peggo_t validator_config_t: file { lock unlink append };
 allow peggo_t validator_config_t: dir { search rmdir };
 
+allow peggo_t user_home_t:dir { open search };
+allow peggo_t user_home_t: { dir file } {
+	read getattr open
+};
+
 allow peggo_t peggo_exec_t: file {
 	read open getattr map execute entrypoint
 };
 
 #=========== user_t =====================
+allow user_t validator_config_t:dir { search create add_name write };
+allow user_t validator_config_t:file { open create add_name write };
 
 allow user_t peggo_exec_t: file { read getattr execute execute_no_trans open };
 type_transition user_t peggo_exec_t: process peggo_t;
@@ -94,6 +103,7 @@ allow staff_t peggo_log_t:file { open read getattr };
 allow init_t peggo_exec_t: file { read getattr execute execute_no_trans open entrypoint };
 allow init_t peggo_t: process transition;
 allow init_t peggo_log_t:file { open create write append ioctl };
+allow init_t user_home_t:file { read open getattr };
 
 #=========== Admins =====================
 
@@ -137,3 +147,4 @@ allow peggo_t peggo_log_t:file { open create write append ioctl };
 allow peggo_t http_port_t:tcp_socket name_connect;
 allow peggo_t cert_t:dir { open read search };
 allow peggo_t cert_t:{ file lnk_file } { open read getattr };
+
