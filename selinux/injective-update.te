@@ -1,0 +1,110 @@
+module injective-update 1.0;
+
+require {
+	role user_r;
+	type user_t;
+	type injectived_exec_t;
+	type peggo_exec_t;
+
+	class chr_file { read write ioctl append };
+	class process { transition };
+	class dir {
+		add_name remove_name read write rename
+		relabelto search create getattr open rmdir
+	};
+	class file {
+		add_name remove_name getattr execute
+		execute_no_trans map open append
+		read write create entrypoint ioctl
+		relabelto lock rename unlink
+	};
+	# class netlink_route_socket { bind create };
+	# class sock_file { getattr write };
+	# class unix_stream_socket { read write connectto };
+	class tcp_socket {
+        create setopt getopt getattr
+        connect name_connect read write
+	};
+	class udp_socket {
+		create connect getattr
+		read write setopt
+	};
+	lnk_file { open read getattr };
+
+	# class dbus send_msg;
+	# class netlink_route_socket { getattr };
+
+	attribute domain;
+	attribute file_type;
+
+	type bin_t;
+	type user_devpts_t;
+	type user_home_dir_t;
+	type user_home_t;
+	type home_bin_t;
+	#type proc_t;
+	type sysfs_t;
+	type http_port_t;
+	#type passwd_file_t;
+	#type user_tmp_t;
+	#type user_dbusd_t;
+	type net_conf_t;
+	#type sysctl_net_t;
+	#type unreserved_port_t;
+	#type node_t;
+	#type adjtime_t;
+	#type ephemeral_port_t;
+	#type var_log_t;
+	type cert_t;
+}
+
+#=========== Typedefs ===================
+
+type injective_update_t, domain;
+type injective_update_exec_t, file_type;
+role user_r types { injective_update_t };
+
+#=========== injective_update_t =========
+
+allow injective_update_t injectived_exec_t: file {
+	read write getattr open append
+};
+
+allow injective_update_t injectived_exec_t: dir { search open getattr };
+
+allow injective_update_t peggo_exec_t: file {
+	read write getattr open append
+};
+
+allow injective_update_t peggo_exec_t: dir { search open getattr };
+
+allow injective_update_t user_home_t: file {
+	read write getattr open append
+};
+
+allow injective_update_t injective_update_exec_t: file {
+	read open getattr map execute entrypoint
+};
+
+#=========== user_t =====================
+
+allow user_t injective_update_exec_t: file { read getattr execute execute_no_trans open };
+type_transition user_t injective_update_exec_t: process injective_update_t;
+allow user_t injective_update_t: process transition;
+
+#=========== OS Permissions =============
+
+allow injective_update_t user_devpts_t: chr_file { read write ioctl append };
+allow injective_update_t user_home_dir_t: dir { search open getattr };
+allow injective_update_t user_home_t:dir { search open getattr };
+allow injective_update_t home_bin_t:dir { search open getattr };
+allow injective_update_t self:udp_socket { create connect getattr read write setopt };
+allow injective_update_t net_conf_t:file { open getattr read };
+allow injective_update_t sysfs_t:file { open read };
+allow injective_update_t self: tcp_socket {
+	create setopt getopt getattr
+	connect name_connect read write
+};
+allow injective_update_t http_port_t:tcp_socket name_connect;
+allow injective_update_t cert_t:dir { open read search };
+allow injective_update_t cert_t:{ file lnk_file } { open read getattr };

@@ -1,0 +1,139 @@
+module peggo-orchestrator 1.0;
+
+require {
+	role user_r;
+	role system_r;
+	type user_t;
+	type init_t;
+	type staff_t;
+	type unconfined_t;
+	type validator_config_t;
+
+	class chr_file { read write ioctl append };
+	class process { transition };
+	class dir {
+		add_name remove_name read write rename
+		relabelto search create getattr open rmdir
+	};
+	class file {
+		add_name remove_name getattr execute
+		execute_no_trans map open append
+		read write create entrypoint ioctl
+		relabelto lock rename unlink
+	};
+	class netlink_route_socket { bind create };
+	class sock_file { getattr write };
+	class unix_stream_socket { read write connectto };
+	class tcp_socket {
+		create bind setopt name_bind
+		node_bind listen accept getattr
+		connect name_connect getopt
+		read write
+	};
+	class udp_socket {
+		create connect getattr
+		read write setopt
+	};
+	class dbus send_msg;
+	class netlink_route_socket { getattr };
+	class lnk_file { open read getattr };
+	attribute domain;
+	attribute file_type;
+
+	type proc_t;
+	type sysfs_t;
+	type passwd_file_t;
+	type bin_t;
+	type user_devpts_t;
+	type user_home_dir_t;
+	type user_tmp_t;
+	type home_bin_t;
+	type user_dbusd_t;
+	type net_conf_t;
+	type sysctl_net_t;
+	type unreserved_port_t;
+	type node_t;
+	type adjtime_t;
+	type ephemeral_port_t;
+	type var_log_t;
+	type http_port_t;
+	type cert_t;
+}
+
+#=========== Typedefs ===================
+
+type peggo_t, domain;
+type peggo_exec_t, file_type;
+type peggo_log_t, file_type;
+
+role user_r types { peggo_t };
+role system_r types { peggo_t };
+
+#=========== peggo_t ====================
+
+allow peggo_t validator_config_t: { dir file } {
+	add_name remove_name read write create getattr open rename
+};
+allow peggo_t validator_config_t: file { lock unlink append };
+allow peggo_t validator_config_t: dir { search rmdir };
+
+allow peggo_t peggo_exec_t: file {
+	read open getattr map execute entrypoint
+};
+
+#=========== user_t =====================
+
+allow user_t peggo_exec_t: file { read getattr execute execute_no_trans open };
+type_transition user_t peggo_exec_t: process peggo_t;
+allow user_t peggo_t: process transition;
+allow user_t peggo_log_t:file { open read getattr };
+allow staff_t peggo_log_t:file { open read getattr };
+
+#=========== init_t (systemd) ===========
+
+allow init_t peggo_exec_t: file { read getattr execute execute_no_trans open entrypoint };
+allow init_t peggo_t: process transition;
+allow init_t peggo_log_t:file { open create write append ioctl };
+
+#=========== Admins =====================
+
+allow staff_t validator_config_t:{ dir file } relabelto;
+allow unconfined_t validator_config_t:{ dir file } relabelto;
+
+#=========== OS Permissions =============
+
+allow peggo_t user_devpts_t: chr_file { read write ioctl append };
+allow peggo_t user_home_dir_t: dir { search };
+allow peggo_t home_bin_t:dir { search };
+allow peggo_t proc_t:file { read open };
+allow peggo_t self:netlink_route_socket { create bind };
+allow peggo_t sysfs_t:file { read open };
+allow peggo_t bin_t:file { execute execute_no_trans };
+allow peggo_t bin_t:dir { search };
+allow peggo_t passwd_file_t:file { read open getattr };
+allow peggo_t user_tmp_t:dir { search };
+allow peggo_t user_tmp_t:sock_file { getattr write };
+allow peggo_t net_conf_t:file { getattr read };
+allow peggo_t self: tcp_socket {
+	create bind setopt getopt listen
+	accept getattr connect name_connect
+	read write
+};
+allow peggo_t self: udp_socket {
+	create connect getattr
+	read write setopt
+};
+allow peggo_t sysctl_net_t:dir search;
+allow peggo_t sysctl_net_t:file { read open };
+allow peggo_t net_conf_t:file open;
+allow peggo_t self:netlink_route_socket getattr;
+allow peggo_t unreserved_port_t:tcp_socket { name_bind name_connect };
+allow peggo_t node_t:tcp_socket node_bind;
+allow peggo_t ephemeral_port_t:tcp_socket name_connect;
+allow peggo_t adjtime_t:file read;
+allow peggo_t user_dbusd_t:dbus send_msg;
+allow peggo_t user_dbusd_t:unix_stream_socket { read write connectto };
+allow peggo_t peggo_log_t:file { open create write append ioctl };
+allow peggo_t http_port_t:tcp_socket name_connect;
+allow peggo_t cert_t:dir { open read search };
+allow peggo_t cert_t:{ file lnk_file } { open read getattr };
