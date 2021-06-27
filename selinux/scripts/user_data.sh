@@ -219,5 +219,6 @@ echo semanage login -m -S targeted -s sysadm_u -r s0-s0:c0.c1023 root >> /etc/rc
 
 echo "[ON THE NEXT BOOT] Prevent any future SELinux policy changes"
 echo semanage boolean -m --on secure_mode_policyload >> /etc/rc.d/rc.local
+chmod +x /etc/rc.d/rc.local
 
 sleep 20 && reboot &
