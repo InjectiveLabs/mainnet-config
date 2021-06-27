@@ -1,6 +1,6 @@
 ## Example
 
-Tested on CentOS 8 on Equnix Metal
+Tested on CentOS 8 on Equinix Metal
 
 ```bash
 #!/bin/bash
