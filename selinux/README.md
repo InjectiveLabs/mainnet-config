@@ -5,7 +5,7 @@ Tested on CentOS 8 on Equnix Metal
 ```bash
 #!/bin/bash
 
-USER_DATA_VER=1e0ff2ab67534321f598050776ad62cb028857ea
+USER_DATA_VER=f56dbf35e2cdf470c26960c07b6d99c624397eb6
 
 set -e
 
