@@ -18,7 +18,7 @@ PEGGO_SERVICE_UNIT=https://raw.githubusercontent.com/InjectiveLabs/mainnet-confi
 
 CHAIN_BIN_RELEASE_TAG=v4.0.9-1624286601
 SELINUX_POLICIES_REV=selinux-policies-1
-INIT_VALIDATOR_FILES_REV=tool-release-1
+INIT_VALIDATOR_FILES_REV=tool-release-3
 UPDATE_VALIDATOR_FILES_REV=tool-release-2
 
 set -e
