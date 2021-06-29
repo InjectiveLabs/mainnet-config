@@ -61,7 +61,7 @@ genesis_file = "config/genesis.json"
 priv_validator_key_file = "/validator/config/priv_validator_key.json"
 
 # Path to the JSON file containing the last sign state of a validator
-priv_validator_state_file = "/validator/data/priv_validator_state.json"
+priv_validator_state_file = "data/priv_validator_state.json"
 
 # TCP or UNIX socket address for Tendermint to listen on for
 # connections from an external PrivValidator process
