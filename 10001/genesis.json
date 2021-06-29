@@ -632,7 +632,7 @@
                 "commission": {
                   "rate": "0.089000000000000000",
                   "max_rate": "0.200000000000000000",
-                  "max_change_rate": "1.000000000000000000"
+                  "max_change_rate": "0.200000000000000000"
                 },
                 "min_self_delegation": "1",
                 "delegator_address": "inj1rvqzf9u2uxttmshn302anlknfgsatrh5mcu6la",
@@ -675,7 +675,7 @@
             }
           },
           "signatures": [
-            "YeF6R5xFAc/5r/q4W1ffUJaroHXbTRv99rzZ6/InxcZVt5qXv0lpwwfJwrM1vj/RLbv6dl1NfxDcsR4DEzp3WQA="
+            "V8iRkfogJSdvEqQR8T/RApi7yIATkZEJpoXbMJbS/UFa7VgfHsDfw237hjKLAy90XpX1H7opI7BI65QwRkhiHgA="
           ]
         },
         {
@@ -1296,9 +1296,9 @@
                 "description": {
                   "moniker": "Helios.Staking",
                   "identity": "",
-                  "website": "https://heliossstaking.com",
+                  "website": "",
                   "security_contact": "",
-                  "details": "We are a Staking-as-a-Service provider strictly dedicated to the growth of Proof of Stake (PoS) blockchain networks."
+                  "details": ""
                 },
                 "commission": {
                   "rate": "0.050000000000000000",
@@ -1346,7 +1346,7 @@
             }
           },
           "signatures": [
-            "GUi6nRy58JcTqacJf6wl1jTBsMIrdd5eu21U5uesSTUkcADq0r3WJPVX1OXj+qsOqOb58jrCxGtvaS5FAuOybwE="
+            "ZvWhtRWAR2TnGeZWG3OHZWaEUWFA+MIjEXFWdcDg7kNEJQLTicb+bF70gXuEBDrOKs4636jdwtMCZ2zmWRBNZAA="
           ]
         },
         {
