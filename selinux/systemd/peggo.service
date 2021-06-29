@@ -7,6 +7,7 @@ Type=simple
 User=injective.validator
 SELinuxContext=system_u:system_r:peggo_t:s0
 WorkingDirectory=/home/injective.validator/peggo
+EnvironmentFile=/home/injective.validator/peggo/.env
 ExecStart=/home/injective.validator/bin/peggo orchestrator
 TimeoutStartSec=0
 LimitNOFILE=200000

@@ -6,6 +6,7 @@ After=network.target
 Type=simple
 User=injective.validator
 SELinuxContext=system_u:system_r:injectived_t:s0
+EnvironmentFile=/home/injective.validator/config/.env
 ExecStart=/home/injective.validator/bin/injectived start --home /home/injective.validator
 TimeoutStartSec=0
 LimitNOFILE=200000
