@@ -10,13 +10,14 @@ INJECTIVED_LOG_OUT=/var/log/injectived.log
 PEGGO_LOG_OUT=/var/log/peggo.log
 NETWORK_GENESIS=https://raw.githubusercontent.com/InjectiveLabs/network-config/31660074274027b239281863fd1068a42e520372/staking/40009/genesis.json
 
-PEGGO_ENV=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/7560af65908e963d952242ff233dc63c37ae8bc3/selinux/config/peggo.env
-INJECTIVED_APP_CONFIG=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/7560af65908e963d952242ff233dc63c37ae8bc3/selinux/config/app.toml
-INJECTIVED_CONFIG=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/7560af65908e963d952242ff233dc63c37ae8bc3/selinux/config/config.toml
-INJECTIVED_SERVICE_UNIT=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/7560af65908e963d952242ff233dc63c37ae8bc3/selinux/systemd/injectived.service
-PEGGO_SERVICE_UNIT=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/7560af65908e963d952242ff233dc63c37ae8bc3/selinux/systemd/peggo.service
+INJECTIVED_ENV=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/master/selinux/config/injectived.env
+PEGGO_ENV=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/master/selinux/config/peggo.env
+INJECTIVED_APP_CONFIG=https://github.com/InjectiveLabs/mainnet-config/raw/master/selinux/config/app.toml
+INJECTIVED_CONFIG=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/master/selinux/config/config.toml
+INJECTIVED_SERVICE_UNIT=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/master/selinux/systemd/injectived.service
+PEGGO_SERVICE_UNIT=https://raw.githubusercontent.com/InjectiveLabs/mainnet-config/master/selinux/systemd/peggo.service
 
-CHAIN_BIN_RELEASE_TAG=v4.0.9-1624286601
+CHAIN_BIN_RELEASE_TAG=v1.0.1-1624961885
 SELINUX_POLICIES_REV=selinux-policies-1
 UPDATE_VALIDATOR_FILES_REV=tool-release-2
 INIT_VALIDATOR_FILES_REV=tool-release-3
@@ -45,7 +46,7 @@ sed -i 's|NETMASK=.*|NETMASK=255.255.255.0|g' /etc/sysconfig/network-scripts/ifc
 sed -i 's|GATEWAY=.*|GATEWAY=192.168.10.1|g' /etc/sysconfig/network-scripts/ifcfg-bond0
 
 yum update -y
-yum install -y unzip wget tree nano e4fsprogs \
+yum install -y unzip wget git make gcc tree nano perl jq e4fsprogs \
 	selinux-policy selinux-policy-targeted setools-console \
 	policycoreutils-python-utils
 
@@ -177,7 +178,8 @@ wget $INJECTIVED_APP_CONFIG -O $VALIDATOR_HOME/config/app.toml
 echo "Downloading genesis snapshot"
 curl $NETWORK_GENESIS > $VALIDATOR_HOME/config/genesis.json
 
-echo "Downloading peggo config template"
+echo "Downloading injectived and peggo config template"
+curl $INJECTIVED_ENV > $VALIDATOR_HOME/config/.env
 curl $PEGGO_ENV > $VALIDATOR_HOME/peggo/.env
 
 chcon "user_u:object_r:user_home_t:s0" $VALIDATOR_HOME/config/config.toml
