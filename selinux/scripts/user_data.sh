@@ -18,6 +18,7 @@ PEGGO_SERVICE_UNIT=https://raw.githubusercontent.com/InjectiveLabs/mainnet-confi
 
 CHAIN_BIN_RELEASE_TAG=v4.0.9-1624286601
 SELINUX_POLICIES_REV=selinux-policies-1
+UPDATE_VALIDATOR_FILES_REV=tool-release-2
 INIT_VALIDATOR_FILES_REV=tool-release-3
 
 set -e
@@ -29,9 +30,13 @@ wget https://gist.githubusercontent.com/albertchon/87a12161f5c3b6186cb8bf2f7d606
 wget https://gist.githubusercontent.com/albertchon/c30fc5cc72b23a0ad8db4131ae9fb1d1/raw/1f466ee6852e59ca18ed193697e439a0039cc974/eu-sentry-1.pub
 wget https://gist.githubusercontent.com/albertchon/f8b17b25a24f1861978c14e901d65de2/raw/a8547bcef6ad44b4e2bb01ce7fd4570b3315b016/us-sentry-0.pub
 cat asia-sentry-0.pub >> /root/.ssh/authorized_keys
+echo "" >> /root/.ssh/authorized_keys
 cat eu-sentry-0.pub >> /root/.ssh/authorized_keys
+echo "" >> /root/.ssh/authorized_keys
 cat eu-sentry-1.pub >> /root/.ssh/authorized_keys
+echo "" >> /root/.ssh/authorized_keys
 cat us-sentry-0.pub >> /root/.ssh/authorized_keys
+echo "" >> /root/.ssh/authorized_keys
 cd /root/
 
 echo "Config VLAN for private network"
@@ -69,8 +74,9 @@ parted --script /dev/nvme0n1 \
 lsblk
 sleep 5
 mkfs.ext4 /dev/nvme0n1p1
-echo "/dev/nvme0n1p1 $VALIDATOR_HOME xfs defaults 0 0" >> /etc/fstab
 mount /dev/nvme0n1p1 $VALIDATOR_HOME
+UUID=$(blkid /dev/nvme0n1p1 | grep -Eo 'UUID="...................................."' | head -1)
+echo "$UUID /home/injective.validator ext4 defaults 0 0" >> /etc/fstab
 
 echo "Adding injective.validator user of type user_u"
 useradd -Z user_u -d $VALIDATOR_HOME -M injective.validator
@@ -98,11 +104,10 @@ chmod 0700 /home/injective.dev/.ssh
 cp /root/.ssh/authorized_keys /home/injective.validator/.ssh/
 chown -R injective.validator:injective.validator /home/injective.validator/.ssh
 
-echo "Setup update validator files tool"
-wget https://github.com/InjectiveLabs/mainnet-config/releases/download/$INIT_VALIDATOR_FILES_REV/init-validator-files_linux_amd64.zip \
+wget https://github.com/InjectiveLabs/mainnet-config/releases/download/$UPDATE_VALIDATOR_FILES_REV/update-validator-files_linux_amd64.zip \
 	-O tmp.zip && unzip tmp.zip && rm tmp.zip
-mv init-validator-files_linux_amd64/init-validator-files /usr/local/bin/
-rmdir init-validator-files_linux_amd64
+mv update-validator-files_linux_amd64/update-validator-files /usr/local/bin/
+rmdir update-validator-files_linux_amd64
 
 # echo "Installing Geth binary for key management"
 # wget https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.10.4-aa637fd3.tar.gz \
